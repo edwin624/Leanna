@@ -1,0 +1,419 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body { font-family: var(--font-sans); }
+
+  .game-wrap {
+    min-height: 520px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .petal {
+    position: absolute;
+    font-size: 18px;
+    opacity: 0.18;
+    animation: drift linear infinite;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  @keyframes drift {
+    0%   { transform: translateY(-30px) rotate(0deg); opacity: 0; }
+    10%  { opacity: 0.18; }
+    90%  { opacity: 0.12; }
+    100% { transform: translateY(560px) rotate(360deg); opacity: 0; }
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* Intro */
+  .heart-big {
+    font-size: 56px;
+    display: block;
+    margin: 0 auto 1rem;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.12); }
+  }
+
+  .title-text {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin-bottom: 0.4rem;
+  }
+  .subtitle-text {
+    font-size: 15px;
+    color: var(--color-text-secondary);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+
+  /* Question card */
+  .q-card {
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem 1.25rem;
+    margin-bottom: 1.25rem;
+    text-align: left;
+  }
+
+  .q-number {
+    font-size: 12px;
+    color: #c2536a;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.5rem;
+  }
+
+  .q-text {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    line-height: 1.5;
+    margin-bottom: 1.25rem;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .opt-btn {
+    background: var(--color-background-secondary);
+    border: 0.5px solid var(--color-border-secondary);
+    border-radius: var(--border-radius-md);
+    padding: 0.75rem 1rem;
+    font-size: 15px;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    font-family: var(--font-sans);
+  }
+  .opt-btn:hover:not(:disabled) {
+    background: var(--color-background-tertiary);
+    border-color: var(--color-border-primary);
+    transform: translateX(3px);
+  }
+  .opt-btn.correct {
+    background: #f0fdf4;
+    border-color: #4ade80;
+    color: #166534;
+  }
+  .opt-btn.wrong {
+    background: #fff1f2;
+    border-color: #f87171;
+    color: #991b1b;
+  }
+  .opt-btn:disabled { cursor: default; }
+
+  .feedback-msg {
+    font-size: 14px;
+    margin-top: 0.75rem;
+    min-height: 20px;
+    font-style: italic;
+    color: var(--color-text-secondary);
+  }
+
+  /* Progress */
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+  .progress-bar-bg {
+    flex: 1;
+    height: 6px;
+    background: var(--color-background-secondary);
+    border-radius: 99px;
+    overflow: hidden;
+    border: 0.5px solid var(--color-border-tertiary);
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: #e07a8f;
+    border-radius: 99px;
+    transition: width 0.4s ease;
+  }
+  .progress-label {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+  }
+
+  /* Next btn */
+  .next-btn {
+    margin-top: 1rem;
+    background: transparent;
+    border: 0.5px solid var(--color-border-secondary);
+    border-radius: var(--border-radius-md);
+    padding: 0.6rem 1.4rem;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition: background 0.15s;
+    display: none;
+  }
+  .next-btn:hover { background: var(--color-background-secondary); }
+  .next-btn.visible { display: inline-block; }
+
+  /* Start / CTA btn */
+  .cta-btn {
+    background: #e07a8f;
+    color: #fff;
+    border: none;
+    border-radius: var(--border-radius-md);
+    padding: 0.8rem 2rem;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition: opacity 0.15s, transform 0.1s;
+    margin-top: 0.5rem;
+  }
+  .cta-btn:hover { opacity: 0.9; transform: scale(1.02); }
+
+  /* Result screen */
+  .score-display {
+    font-size: 52px;
+    font-weight: 500;
+    color: #e07a8f;
+    margin: 1rem 0 0.5rem;
+  }
+  .score-label {
+    font-size: 15px;
+    color: var(--color-text-secondary);
+    margin-bottom: 1.5rem;
+  }
+  .result-msg {
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius-lg);
+    padding: 1rem 1.25rem;
+    font-size: 15px;
+    color: var(--color-text-primary);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    text-align: left;
+  }
+  .hearts-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 1.5rem;
+    font-size: 22px;
+  }
+
+  .decoration-top {
+    font-size: 15px;
+    color: #e07a8f;
+    margin-bottom: 0.75rem;
+    opacity: 0.7;
+    letter-spacing: 0.2em;
+  }
+</style>
+
+<div class="game-wrap" id="gameWrap">
+
+  <!-- Falling petals -->
+  <div id="petals"></div>
+
+  <!-- INTRO SCREEN -->
+  <div class="screen active" id="screen-intro">
+    <div class="decoration-top">✿ ♥ ✿ ♥ ✿</div>
+    <span class="heart-big">♥</span>
+    <p class="title-text">Trivia de Edwin & Leanna</p>
+    <p class="subtitle-text">¿Cuánto sabe Lenita sobre nuestra historia?<br>5 preguntas para descubrirlo 💕</p>
+    <button class="cta-btn" onclick="startGame()">Jugar ahora</button>
+  </div>
+
+  <!-- QUESTION SCREEN -->
+  <div class="screen" id="screen-question">
+    <div class="progress-wrap">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+      </div>
+      <span class="progress-label" id="progressLabel">1 / 5</span>
+    </div>
+
+    <div class="q-card">
+      <div class="q-number" id="qNumber">PREGUNTA 1</div>
+      <div class="q-text" id="qText"></div>
+      <div class="options" id="optionsWrap"></div>
+      <div class="feedback-msg" id="feedbackMsg"></div>
+    </div>
+
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Siguiente →</button>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div class="screen" id="screen-result">
+    <div class="decoration-top">✿ ♥ ✿ ♥ ✿</div>
+    <span class="heart-big">♥</span>
+    <p class="title-text">¡Fin del juego!</p>
+    <div class="score-display" id="scoreDisplay">0/5</div>
+    <div class="hearts-row" id="heartsRow"></div>
+    <p class="score-label">Respuestas correctas</p>
+    <div class="result-msg" id="resultMsg"></div>
+    <button class="cta-btn" onclick="restartGame()">Jugar de nuevo ♥</button>
+  </div>
+
+</div>
+
+<script>
+const questions = [
+  {
+    q: "¿Dónde vio Edwin a Leanna por primera vez y se enamoró?",
+    options: ["En una fiesta", "En la escuela", "En el parque", "Por redes sociales"],
+    answer: 1,
+    correct: "¡Correcto! Fue en la escuela donde todo comenzó 🏫💕",
+    wrong: "Fue en la escuela... donde el amor llegó sin avisar 🥺"
+  },
+  {
+    q: "¿Cuánto tiempo llevan juntos Edwin y Leanna?",
+    options: ["6 meses y 10 días", "1 año y 2 meses", "9 meses y 23 días", "8 meses exactos"],
+    answer: 2,
+    correct: "¡Exacto! 9 meses y 23 días de amor bonito ✨",
+    wrong: "Son 9 meses y 23 días... ¡cada día cuenta! 💛"
+  },
+  {
+    q: "¿Dónde fue la primera cita de Edwin y Leanna?",
+    options: ["En un restaurante", "En el cine", "En un parque", "En la escuela"],
+    answer: 2,
+    correct: "¡Sí! El parque fue el escenario perfecto para su primera cita 🌸",
+    wrong: "Fue en el parque... qué romántico 🌿💕"
+  },
+  {
+    q: "¿Cuál es el apodo cariñoso de Leanna?",
+    options: ["Lea", "Lena", "Lenita", "Leannis"],
+    answer: 2,
+    correct: "¡Sí, Lenita! Solo Edwin la llama así con tanto amor 💖",
+    wrong: "Es Lenita... el apodo más dulce del mundo 🥰"
+  },
+  {
+    q: "¿Cuál es la canción especial de Edwin y Leanna?",
+    options: ["Hawái de Maluma", "Mi religión de Yan Block", "Tusa de Karol G", "Ojitos lindos de Bad Bunny"],
+    answer: 1,
+    correct: "¡Mi religión de Yan Block! Su canción 🎵💕",
+    wrong: "Es Mi religión de Yan Block... ¡esa canción los describe! 🎶"
+  }, 
+  
+];
+
+let current = 0;
+let score = 0;
+let answered = false;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startGame() {
+  current = 0;
+  score = 0;
+  answered = false;
+  showScreen('screen-question');
+  loadQuestion();
+}
+
+function loadQuestion() {
+  answered = false;
+  const q = questions[current];
+  document.getElementById('qNumber').textContent = 'PREGUNTA ' + (current + 1);
+  document.getElementById('qText').textContent = q.q;
+  document.getElementById('feedbackMsg').textContent = '';
+  document.getElementById('nextBtn').classList.remove('visible');
+
+  const pct = (current / questions.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = (current + 1) + ' / ' + questions.length;
+
+  const wrap = document.getElementById('optionsWrap');
+  wrap.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = opt;
+    btn.onclick = () => selectAnswer(i);
+    wrap.appendChild(btn);
+  });
+}
+
+function selectAnswer(i) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const btns = document.querySelectorAll('.opt-btn');
+  btns.forEach(b => b.disabled = true);
+  btns[q.answer].classList.add('correct');
+  if (i === q.answer) {
+    score++;
+    document.getElementById('feedbackMsg').textContent = q.correct;
+  } else {
+    btns[i].classList.add('wrong');
+    document.getElementById('feedbackMsg').textContent = q.wrong;
+  }
+  document.getElementById('nextBtn').classList.add('visible');
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= questions.length) {
+    showResult();
+  } else {
+    loadQuestion();
+  }
+}
+
+function showResult() {
+  document.getElementById('progressFill').style.width = '100%';
+  showScreen('screen-result');
+  document.getElementById('scoreDisplay').textContent = score + '/5';
+
+  const hearts = document.getElementById('heartsRow');
+  hearts.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const span = document.createElement('span');
+    span.textContent = i < score ? '♥' : '♡';
+    span.style.color = i < score ? '#e07a8f' : 'var(--color-text-secondary)';
+    hearts.appendChild(span);
+  }
+
+  let msg = '';
+  if (score === 5) {
+    msg = '¡Perfecto, Lenita! Sabes todo sobre nuestra historia. Edwin está muy feliz de tenerte 💕 ¡Eres lo más bonito que le ha pasado!';
+  } else if (score >= 3) {
+    msg = '¡Muy bien! Conoces nuestra historia con el corazón. Edwin te quiere muchísimo, Lenita 🌸';
+  } else {
+    msg = 'Aún hay cositas por descubrir juntos... pero lo más importante es que el amor entre Edwin y Leanna es muy real 💛';
+  }
+  document.getElementById('resultMsg').textContent = msg;
+}
+
+function restartGame() {
+  startGame();
+}
+
+// Falling petals
+const emojis = ['♥', '✿', '❀', '♡'];
+const wrap = document.getElementById('petals');
+for (let i = 0; i < 14; i++) {
+  const p = document.createElement('div');
+  p.className = 'petal';
+  p.textContent = emojis[i % emojis.length];
+  p.style.left = (Math.random() * 96) + '%';
+  p.style.top = '-40px';
+  p.style.animationDuration = (6 + Math.random() * 8) + 's';
+  p.style.animationDelay = (Math.random() * 9) + 's';
+  p.style.fontSize = (13 + Math.random() * 10) + 'px';
+  wrap.appendChild(p);
+}
+</script>
